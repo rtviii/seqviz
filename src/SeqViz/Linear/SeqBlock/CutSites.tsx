@@ -1,5 +1,6 @@
 import * as React from "react";
 import { useRef } from "react";
+
 import { ICutSite, InputRefFuncType } from "../../common";
 import { FindXAndWidthType } from "./SeqBlock";
 
@@ -135,6 +136,37 @@ const CutSites = (props: {
 
   /* to keep track of cut site labels and to prevent overlapping  */
   const labelRefs = useRef<(SVGTextElement | null)[]>([]);
+  const isColliding = (a: SVGTextElement | null, b: SVGTextElement | null) => {
+    if (!(a && b)) {
+      return false;
+    }
+    const [rect1, rect2] = [a.getBoundingClientRect(), b.getBoundingClientRect()];
+    return !(
+      rect1.right < rect2.left ||
+      rect1.left > rect2.right ||
+      rect1.bottom < rect2.top ||
+      rect1.top > rect2.bottom
+    );
+  };
+
+  React.useEffect(
+    function calculateCollisions() {
+      let collidingRefs = new Map();
+      labelRefs.current.forEach(ref => {
+        if (ref !== null) {
+          collidingRefs[ref.innerHTML] = labelRefs.current
+            .filter(other => ref !== other && isColliding(ref, other))
+            .map(x => {
+              const rect = x?.getBoundingClientRect();
+              return { label: x?.innerHTML, x: rect?.x, width: rect?.width };
+            });
+        }
+      });
+      console.log("Collisions: ");
+      console.log(collidingRefs);
+    },
+    [sitesWithX]
+  );
 
   return (
     <g className="la-vz-cut-sites">
@@ -183,6 +215,7 @@ const IndivCutSite = (props: {
   connectorX: number;
   complementCutSite: boolean;
   findXAndWidth: FindXAndWidthType;
+  offsetY?: number;
 }) => {
   const {
     c,
@@ -198,6 +231,7 @@ const IndivCutSite = (props: {
     complementCutSite,
     findXAndWidth,
     labelRef,
+    offsetY,
   } = props;
 
   return (
@@ -209,6 +243,7 @@ const IndivCutSite = (props: {
           ref={labelRef}
           className={`la-vz-cut-site-text ${c.id}-name`}
           x={c.cutX}
+          y={offsetY || 0}
           style={{
             cursor: "pointer",
             fill: "rgb(51, 51, 51)",

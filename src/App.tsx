@@ -1,10 +1,10 @@
 import { range } from "lodash";
 import { useState } from "react";
-import { SeqVizSelection } from "./SeqViz/handlers/selection";
+
 import { SeqVizProps } from "./SeqViz/SeqViz";
+import { SeqVizSelection } from "./SeqViz/handlers/selection";
 import { SearchResult } from "./utils/search";
 import { SeqViz } from "./viewer";
-
 
 /**
  * This module is only used for developing seqviz
@@ -18,22 +18,30 @@ export const App = () => {
 
   const [seqvizProps, setSeqVizProps] = React.useState<SeqVizProps>({
     translations: [],
-    seq: "TTATGAATTCGTATGCGTTGTCCTTGGAGTATTAATATTGTTCATGTGGGCAGGCTCAGGTTGAGGTTGAGGTTGAGGGAACTGCTGTTCCTGT",
+    seq: "TTATGAATTCGTATGCGTTGTCCTTGGAGTATTAAGATTTCCCCCGGGGATTGTTCATGTGGGCAGGCTCAGGTTGAGGTTGAGGTTGAGGGAACTGCTGTTCCTGT",
     enzymesCustom: {
-      topStrand: {
-        rseq: "CCTTGG", // recognition sequence
+      "colliding 1": {
+        rseq: "TTATGAATTCGTA", // recognition sequence
         fcut: 0, // cut index on FWD strand, relative to start of rseq
         rcut: 1, // cut index on REV strand, relative to start of rseq - pass in negative offset
-        highlightColor: "#E78587" /* pass in color */,
       },
-      bottomStrand: {
-        rseq: "AGCAG", // recognition sequence
+      "colliding 2": {
+        rseq: "GAATTCGTA", // recognition sequence
         fcut: 0, // cut index on FWD strand, relative to start of rseq
         rcut: 1, // cut index on REV strand, relative to start of rseq - pass in negative offset
-        highlightColor: "#D7E5F0" /* pass in color */,
+      },
+      "colliding 3": {
+        rseq: "CGTA", // recognition sequence
+        fcut: 0, // cut index on FWD strand, relative to start of rseq
+        rcut: 1, // cut index on REV strand, relative to start of rseq - pass in negative offset
+      },
+      "not colliding": {
+        rseq: "CCCCCGGGGATTGTTCATG", // recognition sequence
+        fcut: 0, // cut index on FWD strand, relative to start of rseq
+        rcut: 1, // cut index on REV strand, relative to start of rseq - pass in negative offset
       },
     },
-    enzymes: ["topStrand", "bottomStrand"],
+    enzymes: ["colliding 1", "colliding 2", "not colliding"],
     rotateOnScroll: true,
     viewer: "both" as const,
     annotations: [

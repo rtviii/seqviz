@@ -1,7 +1,8 @@
 import * as React from "react";
+
 import { Annotation } from "../../../part";
 import { SearchResult } from "../../../utils/search";
-import { ICutSite, InputRefFuncType, ISize, Primer } from "../../common";
+import { ICutSite, ISize, InputRefFuncType, Primer } from "../../common";
 import { SeqVizSelection } from "../../handlers/selection";
 import { AnnotationRows } from "./AnnotationRows";
 import CutSiteRow from "./CutSites";
@@ -10,7 +11,6 @@ import LinearFind, { HighlightRegion } from "./LinearFind";
 import Primers from "./Primers";
 import Selection from "./Selection";
 import TranslationRows, { Translation } from "./Translations";
-
 
 export type FindXAndWidthType = (
   n1: number | undefined,
