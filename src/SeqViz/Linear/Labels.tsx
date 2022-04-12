@@ -1,7 +1,8 @@
 import * as React from "react";
 import { useState } from "react";
+
 import WrappedGroupLabel from "../Circular/WrappedGroupLabel";
-import { Coor, ILabel, InputRefFuncType, ISize } from "../common";
+import { Coor, IGroup, ILabel, ISize, InputRefFuncType } from "../common";
 
 interface LabelsProps {
   labels: ILabel[];
@@ -18,17 +19,17 @@ interface LabelsProps {
  */
 const Labels = (props: LabelsProps) => {
   const { labels, size, yDiff, lineHeight, seqLength, findCoor, inputRef } = props;
-  const [hoveredGroup, setHoveredGroup] = useState<unknown>(null);
+  const [hoveredGroup, setHoveredGroup] = useState<IGroup>({
+    labels: labels,
+    forkCoor: { x: 0, y: 0 },
+    lineCoor: { x: 0, y: 0 },
+    textCoor: { x: 0, y: 0 },
+    textAnchor: "",
+  });
   console.log(labels, yDiff, seqLength, findCoor, inputRef, hoveredGroup);
   return (
     <g>
-      <WrappedGroupLabel
-        // @ts-expect-error ts-migrate(2769) FIXME: No overload matches this call.
-        group={hoveredGroup}
-        size={size}
-        setHoveredGroup={setHoveredGroup}
-        lineHeight={lineHeight}
-      />
+      <WrappedGroupLabel group={hoveredGroup} size={size} setHoveredGroup={setHoveredGroup} lineHeight={lineHeight} />
     </g>
   );
 };

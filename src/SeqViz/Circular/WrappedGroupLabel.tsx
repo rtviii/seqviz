@@ -1,14 +1,7 @@
 import * as React from "react";
-import { Coor, ILabel, ISize } from "../common";
-import { CHAR_WIDTH } from "./Circular";
 
-interface IGroup {
-  labels: ILabel[];
-  forkCoor: Coor;
-  textCoor: Coor;
-  textAnchor: string;
-  lineCoor: Coor;
-}
+import { IGroup, ILabel, ISize } from "../common";
+import { CHAR_WIDTH } from "./Circular";
 
 interface WrappedGroupLabelProps {
   group: IGroup;
@@ -44,6 +37,7 @@ export default class WrappedGroupLabel extends React.Component<WrappedGroupLabel
     // group the labels into rows with a preference with widths less than 200px
     const lastRow = (acc: ILabel[][]) => acc[acc.length - 1];
 
+    console.log("GROUP", group);
     const labelRows = group.labels.reduce((acc: ILabel[][], l: ILabel) => {
       const nameWidth = l.name.length * CHAR_WIDTH;
       if (nameWidth > width) {

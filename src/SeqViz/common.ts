@@ -50,3 +50,11 @@ export interface ILabel {
   name: string;
   id?: string;
 }
+
+export interface IGroup {
+  labels: ILabel[];
+  forkCoor: Coor;
+  textCoor: Coor;
+  textAnchor: string;
+  lineCoor: Coor;
+}

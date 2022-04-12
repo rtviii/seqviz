@@ -1,4 +1,5 @@
 import * as React from "react";
+
 import { ICutSite, InputRefFuncType } from "../../common";
 import { FindXAndWidthType } from "./SeqBlock";
 

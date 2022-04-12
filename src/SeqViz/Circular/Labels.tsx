@@ -1,5 +1,6 @@
 import * as React from "react";
-import { Coor, ILabel, InputRefFuncType, ISize } from "../common";
+
+import { Coor, ILabel, ISize, InputRefFuncType } from "../common";
 import { CHAR_WIDTH } from "./Circular";
 import WrappedGroupLabel from "./WrappedGroupLabel";
 
