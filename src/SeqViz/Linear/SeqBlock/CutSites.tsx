@@ -1,6 +1,5 @@
 import * as React from "react";
 import { useRef } from "react";
-
 import { ICutSite, InputRefFuncType } from "../../common";
 import { FindXAndWidthType } from "./SeqBlock";
 
@@ -135,7 +134,7 @@ const CutSites = (props: {
   };
 
   /* to keep track of cut site labels and to prevent overlapping  */
-  const labelRefs = useRef<(SVGTextElement | null)[]>([]);
+  const labelRefs = useRef<[SVGTextElement | null, string][]>([]);
   const isColliding = (a: SVGTextElement | null, b: SVGTextElement | null) => {
     if (!(a && b)) {
       return false;
@@ -148,26 +147,27 @@ const CutSites = (props: {
       rect1.top > rect2.bottom
     );
   };
+  const [offsets, setOffsets] = React.useState<[string, number][]>([]); /* mapping of chain id to offset */
+  React.useEffect(function calculateCollisions() {
+    console.table(sitesWithX);
 
-  React.useEffect(
-    function calculateCollisions() {
-      let collidingRefs = new Map();
-      labelRefs.current.forEach(ref => {
-        if (ref !== null) {
-          collidingRefs[ref.innerHTML] = labelRefs.current
-            .filter(other => ref !== other && isColliding(ref, other))
-            .map(x => {
-              const rect = x?.getBoundingClientRect();
-              return { label: x?.innerHTML, x: rect?.x, width: rect?.width };
-            });
-        }
-      });
-      console.log("Collisions: ");
-      console.log(collidingRefs);
-    },
-    [sitesWithX]
-  );
+    const collidingRefs: Map<string, SVGTextElement[]> = new Map();
+    const newOffsets: [string, number][] = []; /* mapping of chain id to offset */
+    labelRefs.current.forEach(([ref, id]) => {
+      if (ref !== null) {
+        const chain = labelRefs.current.filter(([other, _]) => ref !== other && isColliding(ref, other)) || [];
+        collidingRefs[ref.id] = chain;
+        newOffsets.push([id, chain.length > 1 ? chain.length - 1 : 0]);
+      }
+    });
+    setOffsets(newOffsets);
+  }, []);
 
+  const findoffset = (id: string, label?: string) => {
+    const [_, offset] = offsets.find(([searchId, _]) => searchId == id) || ["not found", 0];
+    console.log("Found", offset, "for", id, "label", label);
+    return offset * -15;
+  };
   return (
     <g className="la-vz-cut-sites">
       {sitesWithX.map((c: ConnectorType) => {
@@ -182,12 +182,13 @@ const CutSites = (props: {
           <IndivCutSite
             key={c.id}
             c={c}
-            labelRef={el => labelRefs.current.push(el)}
+            labelRef={el => labelRefs.current.push([el, c.id])}
             sequenceCutSite={sequenceCutSite}
             textProps={textProps}
             zoom={zoom}
             lineHeight={lineHeight}
             yDiff={yDiff}
+            yOffset={findoffset(c.id, c.name)}
             inputRef={inputRef}
             showIndex={showIndex}
             connectorWidth={connectorWidth}
@@ -215,7 +216,7 @@ const IndivCutSite = (props: {
   connectorX: number;
   complementCutSite: boolean;
   findXAndWidth: FindXAndWidthType;
-  offsetY?: number;
+  yOffset?: number;
 }) => {
   const {
     c,
@@ -231,7 +232,7 @@ const IndivCutSite = (props: {
     complementCutSite,
     findXAndWidth,
     labelRef,
-    offsetY,
+    yOffset,
   } = props;
 
   return (
@@ -243,7 +244,7 @@ const IndivCutSite = (props: {
           ref={labelRef}
           className={`la-vz-cut-site-text ${c.id}-name`}
           x={c.cutX}
-          y={offsetY || 0}
+          y={yOffset || 0}
           style={{
             cursor: "pointer",
             fill: "rgb(51, 51, 51)",
