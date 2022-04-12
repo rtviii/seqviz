@@ -1,23 +1,7 @@
 import * as React from "react";
+import { useState } from "react";
 import WrappedGroupLabel from "../Circular/WrappedGroupLabel";
 import { Coor, ILabel, InputRefFuncType, ISize } from "../common";
-
-interface LabelWithCoors {
-  label: ILabel;
-  lineCoor: Coor;
-  textCoor: Coor;
-  textAnchor: unknown;
-}
-
-interface GroupedLabelsWithCoors {
-  name: string;
-  textAnchor: unknown;
-  textCoor: Coor;
-  lineCoor: Coor;
-  labels: ILabel[];
-  grouped: unknown;
-  overflow: unknown;
-}
 
 interface LabelsProps {
   labels: ILabel[];
@@ -29,21 +13,18 @@ interface LabelsProps {
   inputRef: InputRefFuncType;
 }
 
-interface LabelsState {
-  hoveredGroup: unknown;
-}
-
 /**
  * Linear Analogoue to /Circular/Labels.tsx
  */
 const Labels = (props: LabelsProps) => {
   const { labels, size, yDiff, lineHeight, seqLength, findCoor, inputRef } = props;
-  const setHoveredGroup = () => console.log("setHoveredGroup called");
+  const [hoveredGroup, setHoveredGroup] = useState<unknown>(null);
+  console.log(labels, yDiff, seqLength, findCoor, inputRef, hoveredGroup);
   return (
     <g>
       <WrappedGroupLabel
         // @ts-expect-error ts-migrate(2769) FIXME: No overload matches this call.
-        group={hovered}
+        group={hoveredGroup}
         size={size}
         setHoveredGroup={setHoveredGroup}
         lineHeight={lineHeight}

@@ -3,7 +3,7 @@ import { Annotation } from "../../part";
 import bindingSites from "../../utils/bindingSites";
 import isEqual from "../../utils/isEqual";
 import { SearchResult } from "../../utils/search";
-import { Coor, ICutSite, InputRefFuncType, ISize, Primer } from "../common";
+import { Coor, ICutSite, ILabel, InputRefFuncType, ISize, Primer } from "../common";
 import { stackElements } from "../elementsToRows";
 import withViewerHOCs from "../handlers";
 import CentralIndexContext from "../handlers/centralIndex";
@@ -13,7 +13,7 @@ import { CircularFind } from "./CircularFind";
 import Selection from "./CircularSelection";
 import CutSites from "./CutSites";
 import Index from "./Index";
-import Labels, { ILabel } from "./Labels";
+import Labels from "./Labels";
 
 // this will need to change whenever the css of the plasmid viewer text changes
 // just divide the width of some rectangular text by it's number of characters

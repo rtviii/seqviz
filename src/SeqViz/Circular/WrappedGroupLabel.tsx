@@ -1,11 +1,26 @@
 import * as React from "react";
-
+import { Coor, ILabel, ISize } from "../common";
 import { CHAR_WIDTH } from "./Circular";
+
+interface IGroup {
+  labels: ILabel[];
+  forkCoor: Coor;
+  textCoor: Coor;
+  textAnchor: string;
+  lineCoor: Coor;
+}
+
+interface WrappedGroupLabelProps {
+  group: IGroup;
+  setHoveredGroup: (group: unknown) => void;
+  lineHeight: number;
+  size: ISize;
+}
 
 /**
  * a component that groups several other labels together so they're all viewable at once
  */
-export default class WrappedGroupLabel extends React.Component {
+export default class WrappedGroupLabel extends React.Component<WrappedGroupLabelProps> {
   /**
    * given the currently active annotation block, with multiple annotations and enzymes,
    * render each in a single "block", which is a g element with a rect "containing" the
@@ -15,23 +30,21 @@ export default class WrappedGroupLabel extends React.Component {
    */
   render() {
     const {
-      // @ts-expect-error ts-migrate(2339) FIXME: Property 'group' does not exist on type 'Readonly<... Remove this comment to see the full error message
       group,
-      // @ts-expect-error ts-migrate(2339) FIXME: Property 'setHoveredGroup' does not exist on type ... Remove this comment to see the full error message
       setHoveredGroup,
-      // @ts-expect-error ts-migrate(2339) FIXME: Property 'lineHeight' does not exist on type 'Read... Remove this comment to see the full error message
       lineHeight,
-      // @ts-expect-error ts-migrate(2339) FIXME: Property 'size' does not exist on type 'Readonly<{... Remove this comment to see the full error message
       size: { height, width },
     } = this.props;
 
     // utility function for calculating the width of the last row before this one
     // the +1 after name.length is for a comma
-    const calcRowWidth = row => row.reduce((acc, label) => acc + (label.name.length + 1) * CHAR_WIDTH, 0);
+    const calcRowWidth = (rowLabels: ILabel[]) =>
+      rowLabels.reduce((acc, label) => acc + (label.name.length + 1) * CHAR_WIDTH, 0);
 
     // group the labels into rows with a preference with widths less than 200px
-    const lastRow = acc => acc[acc.length - 1];
-    const labelRows = group.labels.reduce((acc, l) => {
+    const lastRow = (acc: ILabel[][]) => acc[acc.length - 1];
+
+    const labelRows = group.labels.reduce((acc: ILabel[][], l: ILabel) => {
       const nameWidth = l.name.length * CHAR_WIDTH;
       if (nameWidth > width) {
         // handle an edge case where the annotation name is MASSIVE and
@@ -40,7 +53,7 @@ export default class WrappedGroupLabel extends React.Component {
         // seq viewer's width, but each still referencing the original label
         const maxCharPerRow = Math.floor((width * 0.75) / CHAR_WIDTH);
         const splitRegex = new RegExp(`.{1,${maxCharPerRow}}`, "g");
-        const splitLabelNameRows = l.name.match(splitRegex);
+        const splitLabelNameRows = l.name.match(splitRegex) || [];
         if (splitLabelNameRows.length) {
           splitLabelNameRows.forEach(splitLabel => {
             acc.push([{ ...l, name: splitLabel.trim() }]);

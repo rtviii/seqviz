@@ -1,8 +1,7 @@
 import * as React from "react";
-import { useRef } from "react";
-import WrappedGroupLabel from "../../Circular/WrappedGroupLabel";
 import { ICutSite, InputRefFuncType } from "../../common";
 import { FindXAndWidthType } from "./SeqBlock";
+
 interface ConnectorType {
   fcut: number;
   rcut: number;
