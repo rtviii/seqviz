@@ -1,18 +1,20 @@
 import * as React from "react";
-
 import { Annotation } from "../../part";
 import bindingSites from "../../utils/bindingSites";
 import isEqual from "../../utils/isEqual";
 import { SearchResult } from "../../utils/search";
 import { createLinearTranslations } from "../../utils/sequence";
-import { Coor, ICutSite, ISize, InputRefFuncType, Primer } from "../common";
+import { Coor, ICutSite, ILabel, InputRefFuncType, ISize, Primer } from "../common";
 import { createMultiRows, createSingleRows, stackElements } from "../elementsToRows";
 import withViewerHOCs from "../handlers";
 import { SeqVizSelection } from "../handlers/selection";
 import InfiniteScroll from "./InfiniteScroll";
+import Labels from "./Labels";
 import { HighlightRegion } from "./SeqBlock/LinearFind";
 import SeqBlock from "./SeqBlock/SeqBlock";
 import { Translation } from "./SeqBlock/Translations";
+
+export const CHAR_WIDTH = 7.801;
 
 interface LinearProps {
   annotations: Annotation[];
@@ -254,15 +256,31 @@ class Linear extends React.Component<LinearProps> {
       yDiff += blockHeights[i];
     }
 
+    const labels: ILabel[] = [];
     return (
       seqBlocks.length && (
-        <InfiniteScroll
-          seqBlocks={seqBlocks}
-          blockHeights={blockHeights}
-          totalHeight={blockHeights.reduce((acc, h) => acc + h, 0)}
-          size={size}
-          bpsPerBlock={bpsPerBlock}
-        />
+        <>
+          <InfiniteScroll
+            seqBlocks={seqBlocks}
+            blockHeights={blockHeights}
+            totalHeight={blockHeights.reduce((acc, h) => acc + h, 0)}
+            size={size}
+            bpsPerBlock={bpsPerBlock}
+          />
+          <Labels
+            labels={labels}
+            size={size}
+            yDiff={yDiff}
+            lineHeight={0}
+            seqLength={0}
+            findCoor={function (index: number): Coor {
+              throw new Error("Function not implemented. " + index);
+            }}
+            inputRef={function <T>(id: string, ref: unknown): React.LegacyRef<T> {
+              throw new Error("Function not implemented. " + id + " " + ref);
+            }}
+          />
+        </>
       )
     );
   }

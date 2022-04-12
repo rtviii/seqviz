@@ -42,3 +42,11 @@ export interface IEnzyme {
   rcut: number;
   highlightColor?: string;
 }
+
+export interface ILabel {
+  start: number;
+  end: number;
+  type: "enzyme" | "annotation";
+  name: string;
+  id?: string;
+}

@@ -1,16 +1,7 @@
 import * as React from "react";
-
-import { Coor, ISize, InputRefFuncType } from "../common";
+import { Coor, ILabel, InputRefFuncType, ISize } from "../common";
 import { CHAR_WIDTH } from "./Circular";
 import WrappedGroupLabel from "./WrappedGroupLabel";
-
-export interface ILabel {
-  start: number;
-  end: number;
-  type: "enzyme" | "annotation";
-  name: string;
-  id?: string;
-}
 
 interface LabelWithCoors {
   label: ILabel;
