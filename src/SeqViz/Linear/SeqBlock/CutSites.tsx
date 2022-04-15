@@ -18,6 +18,12 @@ interface ConnectorType {
   highlightColor?: string;
 }
 
+interface GroupedConnector {
+  sites: ConnectorType[];
+  startX: number;
+  endX: number;
+}
+
 /**
  * on hover, an enzyme recognition site should have an opacity of 0.5. 0 otherwise
  * on hover, an enzyme name should have opacity 1.0, 0 otherwise
@@ -100,11 +106,6 @@ const CutSites = (props: {
     };
   });
 
-  interface GroupedConnector {
-    sites: ConnectorType[];
-    startX: number;
-    endX: number;
-  }
   const groupedSitesWithX: GroupedConnector[] = [];
   sitesWithX.forEach((site: ConnectorType) => {
     const overlapIndex = groupedSitesWithX.findIndex(potentialOverlap => {
@@ -161,7 +162,21 @@ const CutSites = (props: {
       {groupedSitesWithX.map((group: GroupedConnector) => {
         // prevent double rendering, by placing the indices only in the seqBlock
         // that they need to be shown. Important for the zero-index edge case
-        return <GroupedConnector group={group} />;
+        return (
+          <GroupedConnector
+            key={JSON.stringify(group)}
+            group={group}
+            firstBase={firstBase}
+            lastBase={lastBase}
+            getConnectorXAndWidth={getConnectorXAndWidth}
+            textProps={textProps}
+            zoom={zoom}
+            lineHeight={lineHeight}
+            yDiff={yDiff}
+            inputRef={inputRef}
+            findXAndWidth={findXAndWidth}
+          />
+        );
       })}
     </g>
   );
@@ -233,12 +248,98 @@ const CutSiteLabel = (props: {
   );
 };
 
-function GroupedConnector(props: {
-  c: ConnectorType;
+function renderConnector(props: {
+  connector: ConnectorType;
   firstBase: number;
   lastBase: number;
-  x: number;
-  width: number;
+  getConnectorXAndWidth: (
+    c: ConnectorType,
+    sequenceCutSite: boolean,
+    complementCutSite: boolean
+  ) => { x: number; width: number };
+  textProps: { dominantBaseline: string; textAnchor: string; y: number };
+  zoom: number;
+  lineHeight: number;
+  yDiff: number;
+  inputRef: InputRefFuncType;
+  findXAndWidth: FindXAndWidthType;
+  collapsed: boolean;
+}) {
+  const {
+    connector,
+    firstBase,
+    lastBase,
+    getConnectorXAndWidth,
+    textProps,
+    zoom,
+    lineHeight,
+    yDiff,
+    inputRef,
+    findXAndWidth,
+    collapsed,
+  } = props;
+  const sequenceCutSite = connector.fcut >= firstBase && connector.fcut < lastBase;
+  const complementCutSite = connector.rcut >= firstBase && connector.rcut < lastBase;
+  const showIndex = sequenceCutSite || complementCutSite;
+
+  const { x: connectorX, width: connectorWidth } = getConnectorXAndWidth(connector, sequenceCutSite, complementCutSite);
+  return (
+    <React.Fragment key={`la-vz-${connector.id}-first-base`}>
+      {sequenceCutSite && !collapsed && <CutSiteLabel textProps={textProps} connector={connector} />}
+      {zoom > 10 && (
+        <rect
+          width={connector.highlightWidth}
+          height={lineHeight * 2}
+          x={connector.highlightX}
+          y={yDiff + 6}
+          strokeDasharray="4,5"
+          style={{
+            stroke: "rgb(150,150,150)",
+            strokeWidth: 1,
+            fill: "rgb(255, 165, 0, 0.3)",
+            fillOpacity: 0,
+          }}
+          className={connector.id}
+          ref={inputRef(connector.id, {
+            id: connector.id,
+            start: connector.start,
+            end: connector.end,
+            type: "ENZYME",
+            element: null,
+          })}
+        />
+      )}
+      {sequenceCutSite ? (
+        <rect width="1px" height={lineHeight} x={connector.cutX - 0.5} y={lineHeight / 4 + yDiff} />
+      ) : null}
+      {showIndex && zoom > 10 ? (
+        <rect width={connectorWidth} height="1px" x={connectorX - 0.5} y={lineHeight * 1.25 + yDiff} />
+      ) : null}
+      {complementCutSite && zoom > 10 ? (
+        <rect width="1px" height={lineHeight + 1.5} x={connector.hangX - 0.5} y={lineHeight * 1.25 + yDiff} />
+      ) : null}
+      {connector.highlightColor && (
+        <>
+          <HighlightBlock
+            connector={connector}
+            id={connector.id}
+            start={connector.start}
+            end={connector.end}
+            indexYDiff={yDiff + lineHeight - 5}
+            findXAndWidth={findXAndWidth}
+            color={connector.highlightColor}
+            direction={connector.recogStrand}
+          />
+        </>
+      )}
+    </React.Fragment>
+  );
+}
+
+function GroupedConnector(props: {
+  group: GroupedConnector;
+  firstBase: number;
+  lastBase: number;
   getConnectorXAndWidth: (
     c: ConnectorType,
     sequenceCutSite: boolean,
@@ -252,11 +353,9 @@ function GroupedConnector(props: {
   findXAndWidth: FindXAndWidthType;
 }) {
   const {
-    c,
+    group,
     firstBase,
     lastBase,
-    x,
-    width,
     getConnectorXAndWidth,
     textProps,
     zoom,
@@ -266,58 +365,50 @@ function GroupedConnector(props: {
     findXAndWidth,
   } = props;
 
-  const sequenceCutSite = c.fcut >= firstBase && c.fcut < lastBase;
-  const complementCutSite = c.rcut >= firstBase && c.rcut < lastBase;
-  const showIndex = sequenceCutSite || complementCutSite;
+  const labelsAreCollapsed = group.sites.length > 1;
 
-  const { x: connectorX, width: connectorWidth } = getConnectorXAndWidth(c, sequenceCutSite, complementCutSite);
+  const groupedConnectors = group.sites.map(connector => {
+    return renderConnector({
+      connector,
+      firstBase,
+      lastBase,
+      getConnectorXAndWidth,
+      textProps,
+      zoom,
+      lineHeight,
+      yDiff,
+      inputRef,
+      findXAndWidth,
+      collapsed: labelsAreCollapsed,
+    });
+  });
+
   return (
-    <React.Fragment key={`la-vz-${c.id}-first-base`}>
-      {sequenceCutSite && <CutSiteLabel textProps={textProps} connector={c} />}
-      {zoom > 10 && (
-        <rect
-          width={c.highlightWidth}
-          height={lineHeight * 2}
-          x={c.highlightX}
-          y={yDiff + 6}
-          strokeDasharray="4,5"
-          style={{
-            stroke: "rgb(150,150,150)",
-            strokeWidth: 1,
-            fill: "rgb(255, 165, 0, 0.3)",
-            fillOpacity: 0,
-          }}
-          className={c.id}
-          ref={inputRef(c.id, {
-            id: c.id,
-            start: c.start,
-            end: c.end,
-            type: "ENZYME",
-            element: null,
-          })}
-        />
-      )}
-      {sequenceCutSite ? <rect width="1px" height={lineHeight} x={c.cutX - 0.5} y={lineHeight / 4 + yDiff} /> : null}
-      {showIndex && zoom > 10 ? (
-        <rect width={connectorWidth} height="1px" x={connectorX - 0.5} y={lineHeight * 1.25 + yDiff} />
-      ) : null}
-      {complementCutSite && zoom > 10 ? (
-        <rect width="1px" height={lineHeight + 1.5} x={c.hangX - 0.5} y={lineHeight * 1.25 + yDiff} />
-      ) : null}
-      {c.highlightColor && (
-        <>
-          <HighlightBlock
-            connector={c}
-            id={c.id}
-            start={c.start}
-            end={c.end}
-            indexYDiff={yDiff + lineHeight - 5}
-            findXAndWidth={findXAndWidth}
-            color={c.highlightColor}
-            direction={c.recogStrand}
-          />
-        </>
-      )}
-    </React.Fragment>
+    <>
+      {labelsAreCollapsed && <CollapsedLabel connectors={group.sites} xPos={group.endX - group.startX / 2} yPos={50} />}
+      {groupedConnectors}
+    </>
   );
 }
+
+const CollapsedLabel = (props: { connectors: ConnectorType[]; xPos: number; yPos: number }) => {
+  const { connectors } = props;
+  const [hovered, setHovered] = React.useState(false);
+
+  let text = "";
+  if (connectors.length > 1) {
+    if (!hovered) {
+      text = `+${connectors.length}`;
+    } else {
+      text = connectors.map(c => c.name).join("\n");
+    }
+  } else {
+    text = connectors[0].name || "no name provided!!";
+  }
+
+  return (
+    <text onMouseLeave={() => setHovered(false)} onMouseEnter={() => setHovered(true)} className="la-vz-cut-site-text">
+      {text}
+    </text>
+  );
+};
