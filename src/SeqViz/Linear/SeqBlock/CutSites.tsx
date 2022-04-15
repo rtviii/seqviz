@@ -1,5 +1,4 @@
 import * as React from "react";
-
 import { ICutSite, InputRefFuncType } from "../../common";
 import { FindXAndWidthType } from "./SeqBlock";
 
@@ -101,13 +100,31 @@ const CutSites = (props: {
     };
   });
 
-  if (!sitesWithX.length) return null;
+  interface GroupedConnector {
+    sites: ConnectorType[];
+    startX: number;
+    endX: number;
+  }
+  const groupedSitesWithX: GroupedConnector[] = [];
+  sitesWithX.forEach((site: ConnectorType) => {
+    const overlapIndex = groupedSitesWithX.findIndex(potentialOverlap => {
+      return Math.abs(potentialOverlap.startX - site.start) < 10;
+    });
+    if (overlapIndex > -1) {
+      groupedSitesWithX[overlapIndex].sites.push(site);
+      groupedSitesWithX[overlapIndex].startX = Math.min(site.start, groupedSitesWithX[overlapIndex].startX);
+      groupedSitesWithX[overlapIndex].endX = Math.max(site.end, groupedSitesWithX[overlapIndex].endX);
+      return groupedSitesWithX;
+    }
 
-  const textProps = {
-    dominantBaseline: "inherit",
-    textAnchor: "start",
-    y: yDiff,
-  };
+    return groupedSitesWithX.push({
+      sites: [site],
+      startX: site.start,
+      endX: site.end,
+    });
+  });
+  console.table(groupedSitesWithX);
+  if (!sitesWithX.length) return null;
 
   const getConnectorXAndWidth = (c: ConnectorType, sequenceCutSite: boolean, complementCutSite: boolean) => {
     if (sequenceCutSite && complementCutSite) {
@@ -133,85 +150,18 @@ const CutSites = (props: {
     return { x: 0, width: 0 };
   };
 
+  const textProps = {
+    dominantBaseline: "inherit",
+    textAnchor: "start",
+    y: yDiff,
+  };
+
   return (
     <g className="la-vz-cut-sites">
-      {sitesWithX.map((c: ConnectorType) => {
-        // prevent double rendering, by placing the indeces only in the seqBlock
+      {groupedSitesWithX.map((group: GroupedConnector) => {
+        // prevent double rendering, by placing the indices only in the seqBlock
         // that they need to be shown. Important for the zero-index edge case
-        const sequenceCutSite = c.fcut >= firstBase && c.fcut < lastBase;
-        const complementCutSite = c.rcut >= firstBase && c.rcut < lastBase;
-        const showIndex = sequenceCutSite || complementCutSite;
-
-        const { x: connectorX, width: connectorWidth } = getConnectorXAndWidth(c, sequenceCutSite, complementCutSite);
-        return (
-          <React.Fragment key={`la-vz-${c.id}-first-base`}>
-            {sequenceCutSite ? (
-              <text
-                {...textProps}
-                id={c.id}
-                className={`la-vz-cut-site-text ${c.id}-name`}
-                x={c.cutX}
-                style={{
-                  cursor: "pointer",
-                  fill: "rgb(51, 51, 51)",
-                  fillOpacity: 0.8,
-                }}
-                onMouseOver={() => hoverCutSite(c.id, true)}
-                onMouseOut={() => hoverCutSite(c.id, false)}
-                onFocus={() => 0}
-                onBlur={() => 0}
-              >
-                {c.name}
-              </text>
-            ) : null}
-            {zoom > 10 && (
-              <rect
-                width={c.highlightWidth}
-                height={lineHeight * 2}
-                x={c.highlightX}
-                y={yDiff + 6}
-                strokeDasharray="4,5"
-                style={{
-                  stroke: "rgb(150,150,150)",
-                  strokeWidth: 1,
-                  fill: "rgb(255, 165, 0, 0.3)",
-                  fillOpacity: 0,
-                }}
-                className={c.id}
-                ref={inputRef(c.id, {
-                  id: c.id,
-                  start: c.start,
-                  end: c.end,
-                  type: "ENZYME",
-                  element: null,
-                })}
-              />
-            )}
-            {sequenceCutSite ? (
-              <rect width="1px" height={lineHeight} x={c.cutX - 0.5} y={lineHeight / 4 + yDiff} />
-            ) : null}
-            {showIndex && zoom > 10 ? (
-              <rect width={connectorWidth} height="1px" x={connectorX - 0.5} y={lineHeight * 1.25 + yDiff} />
-            ) : null}
-            {complementCutSite && zoom > 10 ? (
-              <rect width="1px" height={lineHeight + 1.5} x={c.hangX - 0.5} y={lineHeight * 1.25 + yDiff} />
-            ) : null}
-            {c.highlightColor && (
-              <>
-                <HighlightBlock
-                  connector={c}
-                  id={c.id}
-                  start={c.start}
-                  end={c.end}
-                  indexYDiff={yDiff + lineHeight - 5}
-                  findXAndWidth={findXAndWidth}
-                  color={c.highlightColor}
-                  direction={c.recogStrand}
-                />
-              </>
-            )}
-          </React.Fragment>
-        );
+        return <GroupedConnector group={group} />;
       })}
     </g>
   );
@@ -256,3 +206,118 @@ const HighlightBlock = (props: {
 };
 
 export default CutSites;
+
+const CutSiteLabel = (props: {
+  textProps: { dominantBaseline: string; textAnchor: string; y: number };
+  connector: ConnectorType;
+}) => {
+  const { textProps, connector } = props;
+  return (
+    <text
+      {...textProps}
+      id={connector.id}
+      className={`la-vz-cut-site-text ${connector.id}-name`}
+      x={connector.cutX}
+      style={{
+        cursor: "pointer",
+        fill: "rgb(51, 51, 51)",
+        fillOpacity: 0.8,
+      }}
+      onMouseOver={() => hoverCutSite(connector.id, true)}
+      onMouseOut={() => hoverCutSite(connector.id, false)}
+      onFocus={() => 0}
+      onBlur={() => 0}
+    >
+      {connector.name}
+    </text>
+  );
+};
+
+function GroupedConnector(props: {
+  c: ConnectorType;
+  firstBase: number;
+  lastBase: number;
+  x: number;
+  width: number;
+  getConnectorXAndWidth: (
+    c: ConnectorType,
+    sequenceCutSite: boolean,
+    complementCutSite: boolean
+  ) => { x: number; width: number };
+  textProps: { dominantBaseline: string; textAnchor: string; y: number };
+  zoom: number;
+  lineHeight: number;
+  yDiff: number;
+  inputRef: InputRefFuncType;
+  findXAndWidth: FindXAndWidthType;
+}) {
+  const {
+    c,
+    firstBase,
+    lastBase,
+    x,
+    width,
+    getConnectorXAndWidth,
+    textProps,
+    zoom,
+    lineHeight,
+    yDiff,
+    inputRef,
+    findXAndWidth,
+  } = props;
+
+  const sequenceCutSite = c.fcut >= firstBase && c.fcut < lastBase;
+  const complementCutSite = c.rcut >= firstBase && c.rcut < lastBase;
+  const showIndex = sequenceCutSite || complementCutSite;
+
+  const { x: connectorX, width: connectorWidth } = getConnectorXAndWidth(c, sequenceCutSite, complementCutSite);
+  return (
+    <React.Fragment key={`la-vz-${c.id}-first-base`}>
+      {sequenceCutSite && <CutSiteLabel textProps={textProps} connector={c} />}
+      {zoom > 10 && (
+        <rect
+          width={c.highlightWidth}
+          height={lineHeight * 2}
+          x={c.highlightX}
+          y={yDiff + 6}
+          strokeDasharray="4,5"
+          style={{
+            stroke: "rgb(150,150,150)",
+            strokeWidth: 1,
+            fill: "rgb(255, 165, 0, 0.3)",
+            fillOpacity: 0,
+          }}
+          className={c.id}
+          ref={inputRef(c.id, {
+            id: c.id,
+            start: c.start,
+            end: c.end,
+            type: "ENZYME",
+            element: null,
+          })}
+        />
+      )}
+      {sequenceCutSite ? <rect width="1px" height={lineHeight} x={c.cutX - 0.5} y={lineHeight / 4 + yDiff} /> : null}
+      {showIndex && zoom > 10 ? (
+        <rect width={connectorWidth} height="1px" x={connectorX - 0.5} y={lineHeight * 1.25 + yDiff} />
+      ) : null}
+      {complementCutSite && zoom > 10 ? (
+        <rect width="1px" height={lineHeight + 1.5} x={c.hangX - 0.5} y={lineHeight * 1.25 + yDiff} />
+      ) : null}
+      {c.highlightColor && (
+        <>
+          <HighlightBlock
+            connector={c}
+            id={c.id}
+            start={c.start}
+            end={c.end}
+            indexYDiff={yDiff + lineHeight - 5}
+            findXAndWidth={findXAndWidth}
+            color={c.highlightColor}
+            direction={c.recogStrand}
+          />
+        </>
+      )}
+    </React.Fragment>
+  );
+}

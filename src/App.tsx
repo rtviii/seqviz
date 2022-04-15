@@ -1,8 +1,5 @@
-import { range } from "lodash";
-import { useState } from "react";
-
-import { SeqVizProps } from "./SeqViz/SeqViz";
 import { SeqVizSelection } from "./SeqViz/handlers/selection";
+import { SeqVizProps } from "./SeqViz/SeqViz";
 import { SearchResult } from "./utils/search";
 import { SeqViz } from "./viewer";
 
@@ -13,10 +10,7 @@ import { SeqViz } from "./viewer";
 import React = require("react");
 
 export const App = () => {
-  const [search, setSearch] = React.useState("");
-  const [searchResults, setSearchResults] = React.useState<SearchResult[]>([]);
-
-  const [seqvizProps, setSeqVizProps] = React.useState<SeqVizProps>({
+  const [seqvizProps] = React.useState<SeqVizProps>({
     translations: [],
     seq: "TTATGAATTCGTATGCGTTGTCCTTGGAGTATTAAGATTTCCCCCGGGGATTGTTCATGTGGGCAGGCTCAGGTTGAGGTTGAGGTTGAGGGAACTGCTGTTCCTGT",
     enzymesCustom: {
@@ -43,7 +37,7 @@ export const App = () => {
     },
     enzymes: ["colliding 1", "colliding 2", "not colliding"],
     rotateOnScroll: true,
-    viewer: "both" as const,
+    viewer: "linear" as const,
     annotations: [
       { id: "sample annotation", color: "green", type: "enzyme", direction: 1, start: 8, end: 19, name: "test" },
     ],
@@ -59,7 +53,7 @@ export const App = () => {
       seqvizProps.bpColors[selection.start] = "green";
     },
     onSearch: (results: SearchResult[]) => {
-      setSearchResults(results);
+      console.table(results);
     },
     bpColors: {},
     /* bpColors: {
@@ -77,69 +71,9 @@ export const App = () => {
       { start: 70, end: 80 },
     ],
   });
-  const submitIndices = (start: number, end: number, color: string) => {
-    const oldHighlightedRegions = seqvizProps.highlightedRegions ? seqvizProps.highlightedRegions : [];
-    const newHighlightedRegions = [...oldHighlightedRegions, { start, end, color }];
-    setSeqVizProps({ ...seqvizProps, highlightedRegions: newHighlightedRegions });
-  };
   return (
     <>
-      <HighlightBox submitIndices={submitIndices} />
-      <SearchBox
-        search={search}
-        highlightSearch={() => {
-          const newBPColors = { ...seqvizProps.bpColors };
-          searchResults.forEach((res: SearchResult) => {
-            range(res.start, res.end).map((bpIdx: number) => (newBPColors[bpIdx] = "orange"));
-          });
-          setSeqVizProps({ ...seqvizProps, bpColors: newBPColors });
-        }}
-        onSearch={(search: string) => {
-          setSearch(search);
-          setSeqVizProps({ ...seqvizProps, search: { query: search, mismatch: 0 } });
-        }}
-      />
-
       <SeqViz {...seqvizProps} />
     </>
-  );
-};
-
-const HighlightBox = (props: { submitIndices: (start: number, end: number, color: string) => void }) => {
-  const [start, setStart] = useState<number>(0);
-  const [end, setEnd] = useState<number>(0);
-  const [color, setColor] = useState("#ff6347");
-
-  const onClick = () => {
-    if (start >= 0 && end >= start) {
-      props.submitIndices(start, end, color);
-    }
-    if (start) {
-      setStart(0);
-    }
-    if (end) {
-      setEnd(0);
-    }
-  };
-  return (
-    <div>
-      <input type="number" value={start} onChange={e => setStart(parseInt(e.target.value))} />
-      <input type="number" value={end} onChange={e => setEnd(parseInt(e.target.value))} />
-      <select value={color} onChange={e => setColor(e.target.value)}>
-        <option value="#ff6347">Red</option>
-        <option value="#3cb371">Green</option>
-        <option value="#87ceeb">Blue</option>
-      </select>
-      <input type="button" value={"Highlight Range"} onClick={onClick} />
-    </div>
-  );
-};
-
-const SearchBox = (props: { search: string; onSearch: (search: string) => void; highlightSearch: () => void }) => {
-  return (
-    <div>
-      <input type="text" value={props.search} onChange={e => props.onSearch(e.target.value)} />
-      <input type="button" value={"Highlight all searches"} onClick={props.highlightSearch} />
-    </div>
   );
 };

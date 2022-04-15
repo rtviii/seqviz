@@ -1,16 +1,14 @@
 import * as React from "react";
-
 import { Annotation } from "../../part";
 import bindingSites from "../../utils/bindingSites";
 import isEqual from "../../utils/isEqual";
 import { SearchResult } from "../../utils/search";
 import { createLinearTranslations } from "../../utils/sequence";
-import { Coor, ICutSite, ILabel, ISize, InputRefFuncType, Primer } from "../common";
+import { Coor, ICutSite, InputRefFuncType, ISize, Primer } from "../common";
 import { createMultiRows, createSingleRows, stackElements } from "../elementsToRows";
 import withViewerHOCs from "../handlers";
 import { SeqVizSelection } from "../handlers/selection";
 import InfiniteScroll from "./InfiniteScroll";
-import Labels from "./Labels";
 import { HighlightRegion } from "./SeqBlock/LinearFind";
 import SeqBlock from "./SeqBlock/SeqBlock";
 import { Translation } from "./SeqBlock/Translations";
@@ -257,7 +255,6 @@ class Linear extends React.Component<LinearProps> {
       yDiff += blockHeights[i];
     }
 
-    const labels: ILabel[] = [];
     return (
       seqBlocks.length && (
         <>
@@ -267,19 +264,6 @@ class Linear extends React.Component<LinearProps> {
             totalHeight={blockHeights.reduce((acc, h) => acc + h, 0)}
             size={size}
             bpsPerBlock={bpsPerBlock}
-          />
-          <Labels
-            labels={labels}
-            size={size}
-            yDiff={yDiff}
-            lineHeight={0}
-            seqLength={0}
-            findCoor={function (index: number): Coor {
-              throw new Error("Function not implemented. " + index);
-            }}
-            inputRef={function <T>(id: string, ref: unknown): React.LegacyRef<T> {
-              throw new Error("Function not implemented. " + id + " " + ref);
-            }}
           />
         </>
       )

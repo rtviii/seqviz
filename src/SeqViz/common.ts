@@ -58,3 +58,20 @@ export interface IGroup {
   textAnchor: string;
   lineCoor: Coor;
 }
+
+export interface LabelWithCoors {
+  label: ILabel;
+  lineCoor: Coor;
+  textCoor: Coor;
+  textAnchor: unknown;
+}
+
+export interface GroupedLabelsWithCoors {
+  name: string;
+  textAnchor: unknown;
+  textCoor: Coor;
+  lineCoor: Coor;
+  labels: ILabel[];
+  grouped: unknown;
+  overflow: unknown;
+}

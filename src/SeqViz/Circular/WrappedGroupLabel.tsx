@@ -1,5 +1,4 @@
 import * as React from "react";
-
 import { IGroup, ILabel, ISize } from "../common";
 import { CHAR_WIDTH } from "./Circular";
 
@@ -29,6 +28,10 @@ export default class WrappedGroupLabel extends React.Component<WrappedGroupLabel
       size: { height, width },
     } = this.props;
 
+    if (!group) {
+      throw new Error("Undefined Group");
+    }
+
     // utility function for calculating the width of the last row before this one
     // the +1 after name.length is for a comma
     const calcRowWidth = (rowLabels: ILabel[]) =>
@@ -36,8 +39,6 @@ export default class WrappedGroupLabel extends React.Component<WrappedGroupLabel
 
     // group the labels into rows with a preference with widths less than 200px
     const lastRow = (acc: ILabel[][]) => acc[acc.length - 1];
-
-    console.log("GROUP", group);
     const labelRows = group.labels.reduce((acc: ILabel[][], l: ILabel) => {
       const nameWidth = l.name.length * CHAR_WIDTH;
       if (nameWidth > width) {
@@ -99,6 +100,9 @@ export default class WrappedGroupLabel extends React.Component<WrappedGroupLabel
     const groupCoor = { x, y };
     const rectCoor = { x: x - CHAR_WIDTH, y: y - CHAR_WIDTH - 2 };
 
+    if (group.labels.length == 0) {
+      throw new Error("no labels provided");
+    }
     const key = `${group.labels[0].id}_overlay`;
 
     return (

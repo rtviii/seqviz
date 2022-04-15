@@ -1,6 +1,5 @@
 import * as React from "react";
-
-import { Coor, ILabel, ISize, InputRefFuncType } from "../common";
+import { Coor, ILabel, InputRefFuncType, ISize } from "../common";
 import { CHAR_WIDTH } from "./Circular";
 import WrappedGroupLabel from "./WrappedGroupLabel";
 
@@ -354,7 +353,6 @@ export default class Labels extends React.Component<LabelsProps, LabelsState> {
         })}
         {hovered && (
           <WrappedGroupLabel
-            // @ts-expect-error ts-migrate(2769) FIXME: No overload matches this call.
             group={hovered}
             size={size}
             setHoveredGroup={this.setHoveredGroup}
