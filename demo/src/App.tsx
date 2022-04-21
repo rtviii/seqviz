@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Col, Container, Row } from "react-bootstrap";
+import { Col, Container, Form, Row } from "react-bootstrap";
 import { SeqViz } from "seqviz";
 import "./App.css";
 import { BrokerNavBar } from "./BrokerNavBar";
@@ -20,15 +20,15 @@ function App() {
     showComplement: true,
     showIndex: true,
     zoom: { linear: 50, circular: 0 },
-    style: { height: "70vh" },
+    style: { height: "70vh", width: "100%" },
   };
-  console.log(rangeValue);
   return (
     <div className="App">
       {BrokerNavBar()}
       <Container>
         <Row style={{ margin: 16 }} className="h-70">
           <Col xs={6}>
+            <Form.Label as="h3">Visualized Sequence</Form.Label>
             <SeqViz {...defaultProps} seq={sequence} />
           </Col>
           <Col xs={6}>
