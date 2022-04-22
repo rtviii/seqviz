@@ -1,14 +1,16 @@
 import React, { useRef, useState } from "react";
-import { Button, ButtonGroup, Form, Overlay, ToggleButton } from "react-bootstrap";
+import { Button, ButtonGroup, Form, Overlay, Spinner, ToggleButton } from "react-bootstrap";
 
 export function OrderForm(props: {
   sequence: string;
   setSequence: React.Dispatch<React.SetStateAction<string>>;
   speedValue: string;
   setSpeedValue: React.Dispatch<React.SetStateAction<string>>;
+  onSubmit: () => void;
 }) {
-  const { sequence, setSequence, speedValue, setSpeedValue } = props;
+  const { sequence, setSequence, speedValue, setSpeedValue, onSubmit } = props;
   const [splanched, setSplanched] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   const splanchTarget = useRef(null);
 
@@ -18,10 +20,11 @@ export function OrderForm(props: {
       <Form.Group className="mb-3">
         <Form.Label as="h4">Sequence Data</Form.Label>
         <Form.Control
-          type="textarea"
+          as="textarea"
           placeholder="Enter sequence to manufacture"
           value={sequence}
           onChange={e => setSequence(e.target.value)}
+          rows={5}
         />
       </Form.Group>
 
@@ -66,7 +69,7 @@ export function OrderForm(props: {
                 ...props.style,
               }}
             >
-              Warning: this will significantly delay manufacturing time.
+              Warning: this will significantly increase manufacturing time.
             </div>
           )}
         </Overlay>
@@ -78,8 +81,26 @@ export function OrderForm(props: {
         <Form.Control as="textarea" placeholder="Leave a comment here" />
       </Form.Group>
       <Form.Group className="mb-3">
-        <Button variant="primary" type="submit">
-          Submit
+        <Button
+          variant="primary"
+          type="submit"
+          onClick={() => {
+            setSubmitting(true);
+            setTimeout(() => onSubmit(), 2000);
+          }}
+          disabled={submitting}
+        >
+          {submitting && (
+            <Spinner
+              as="span"
+              animation="border"
+              size="sm"
+              role="status"
+              aria-hidden="true"
+              style={{ marginRight: 8 }}
+            />
+          )}
+          {submitting ? "Finding Manufacturers..." : "Find Manufacturers"}
         </Button>
       </Form.Group>
     </Form>
