@@ -10,18 +10,17 @@ import logo3 from "./assets/logo3.jpg";
 import { BrokerNavBar } from "./BrokerNavBar";
 import { ManufactureViz } from "./ManufactureViz";
 import { OrderForm } from "./OrderForm";
+import { shuffle } from "./utils";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
-export const randIntBetween = (min: number, max: number) => Math.floor(Math.random() * (max - min + 1) + min);
-
 function App() {
   const [sequence, setSequence] = useState<string>(
-    "TTATGAATTCGTATGCGTTGTCCTTGGAGTATTAATATTGTTCATGTGGGCAGGCTCAGGTTGAGGTTGAG"
+    "TTATGAATTCGTATGCGTTGTCCTTGGAGTATTAATATTGTTCATGTGGGCAGGCTCAGGTTGAGGTTGAGTTATGAATTCGTATGCGTTGTCCTTGGAGTATTAATATTGTTCATGTGGGCAGGCTCAGGTTGAGGTTGAGTTATGAATTCGTATGCGTTGTCCTTGGAGTATTAATATTGTTCATGTGGGCAGGCTCAGGTTGAGGTTGAGTTATGAATTCGTATGCGTTGTCCTTGG"
   );
   const [speedValue, setSpeedValue] = useState<string>("Standard");
-  const [submitted, setSubmitted] = useState(true);
-  const [manufactureScore, setManufactureScore] = useState<number | null>(56);
+  const [submitted, setSubmitted] = useState(false);
+  const [manufactureScore, setManufactureScore] = useState<number | null>(null);
 
   const defaultProps = {
     translations: [],
@@ -32,12 +31,12 @@ function App() {
     showComplement: true,
     showIndex: true,
     zoom: { linear: 100, circular: 0 },
-    style: { height: "30vh", width: "100%" },
+    style: { height: "100vh", width: "100%" },
   };
 
   const preSubmit = () => {
     const calculateManufactureScore = () => {
-      return randIntBetween(0, 100);
+      return 84;
     };
     const onSubmit = () => {
       setManufactureScore(calculateManufactureScore);
@@ -54,12 +53,40 @@ function App() {
     );
   };
   const postSubmit = () => {
-    const manufacturers = [
-      { name: "DNA Script", logo: logo0, price: 100, turnaround: 5, description: "" },
-      { name: "Sixfold", logo: logo1, price: 100, turnaround: 5, description: "" },
-      { name: "Sheffield Lab", logo: logo2, price: 100, turnaround: 5, description: "" },
-      { name: "RiboPro", logo: logo3, price: 100, turnaround: 5, description: "" },
-    ];
+    const manufacturers = shuffle([
+      {
+        name: "DNA Script",
+        logo: logo0,
+        price: 100,
+        turnaround: 5,
+        description:
+          "DNA Script was created to revolutionize DNA writing with enzymes. Our core R&D efforts have produced innovations in enzyme engineering, surface and nucleotide chemistries, and instrumentation.",
+      },
+      {
+        name: "Sixfold",
+        logo: logo1,
+        price: 500,
+        turnaround: 5,
+        description:
+          "Meet Mergo® — the next generation of targeted RNA delivery, computationally designed with biocompatible building blocks to reprogram any cell, in anybody.",
+      },
+      {
+        name: "Sheffield Lab",
+        logo: logo2,
+        price: 1000,
+        turnaround: 5,
+        description:
+          "The main goal of our lab is to establish an empirically well-supported unifying model of the neurobiology of complex memory formation and recall from the level of synapses and dendrites to large-scale ensembles of neurons that is based on data obtained from behaving animals engaged in memory-related tasks.",
+      },
+      {
+        name: "RiboPro",
+        logo: logo3,
+        price: 2000,
+        turnaround: 5,
+        description:
+          "RiboPro's custom mRNA synthesis provides transfection-ready mRNA. Via our on-website mRNAssembler™ you can easily design a high-performance mRNA of up to 15k nt.",
+      },
+    ]);
 
     const renderManufacturer = (m: {
       name: string;
@@ -70,7 +97,7 @@ function App() {
     }) => (
       <Card
         key={JSON.stringify(m)}
-        style={{ height: 300, paddingLeft: 0, paddingRight: 0, color: "white", marginBottom: 16 }}
+        style={{ height: 300, paddingLeft: 0, paddingRight: 0, color: "white", marginBottom: 8 }}
       >
         <Image
           src={m.logo}
@@ -78,20 +105,24 @@ function App() {
           rounded
           style={{
             objectFit: "cover",
-            filter: "brightness(50%)",
+            filter: "brightness(40%)",
           }}
         />
         <Card.ImgOverlay>
           <Card.Body>
-            <br />
-            <br />
+            <Card.Text as="h5" style={{ top: 20, right: 20, position: "absolute" }}>
+              ${m.price}
+            </Card.Text>
+            <Card.Text as="h6" style={{ top: 50, right: 20, position: "absolute" }}>
+              Avg. Turnaround: {m.turnaround} weeks
+            </Card.Text>
           </Card.Body>
           <Card.Body>
             <Card.Title>{m.name}</Card.Title>
-            <Card.Text>With supporting text below as a natural lead-in to additional content.</Card.Text>
+            <Card.Text>{m.description}</Card.Text>
           </Card.Body>
           <Card.Body>
-            <Button variant="primary">Order</Button>
+            <Button variant="primary">Place Order</Button>
           </Card.Body>
         </Card.ImgOverlay>
       </Card>
@@ -104,13 +135,10 @@ function App() {
     );
   };
   return (
-    <Container
-      fluid
-      style={{ paddingLeft: 0, paddingRight: 0, margin: 0, overflow: "hidden", height: "100vh", width: "100vw" }}
-    >
+    <Container fluid style={{ paddingLeft: 0, paddingRight: 0 }}>
       {BrokerNavBar()}
-      <Container>
-        <Row className="mt-4">
+      <Container style={{ marginTop: 70 }}>
+        <Row className="mt-4  mb-4 p-8">
           <Col md={12} lg={6}>
             <Row>{manufactureScore && <ManufactureViz score={manufactureScore} />}</Row>
             <Row>

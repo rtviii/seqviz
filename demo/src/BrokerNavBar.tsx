@@ -3,7 +3,7 @@ import { Container, Nav, Navbar } from "react-bootstrap";
 
 export function BrokerNavBar() {
   return (
-    <Navbar bg="primary" variant="dark">
+    <Navbar bg="primary" variant="dark" fixed="top">
       <Container>
         <Navbar.Brand href="#home">Bio-Broker</Navbar.Brand>
         <Nav className="me-auto">

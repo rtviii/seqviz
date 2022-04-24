@@ -9,10 +9,10 @@ export function OrderForm(props: {
   onSubmit: () => void;
 }) {
   const { sequence, setSequence, speedValue, setSpeedValue, onSubmit } = props;
-  const [splanched, setSplanched] = useState(false);
+  const [highPurity, setHighPurity] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
-  const splanchTarget = useRef(null);
+  const highPurityTarget = useRef(null);
 
   return (
     <Form>
@@ -52,18 +52,25 @@ export function OrderForm(props: {
       </Form.Group>
       <Form.Group className="mb-3">
         <Form.Label as="h4">Order Parameters</Form.Label>
-        <Form.Check type="switch" label="Frombulate" />
-        <Form.Check type="switch" label="Deglompf" />
-        <Form.Check type="switch" label="Triple Quaxles" />
-        <Form.Check ref={splanchTarget} type="switch" label="Splanch" onClick={() => setSplanched(!splanched)} />
-        <Overlay target={splanchTarget.current} show={splanched} placement="bottom">
+        <Form.Check type="switch" label="Well Frombulated" />
+        <Form.Check type="switch" label="Low Turbidity" />
+        <Form.Check type="switch" label="Deglompfed" />
+
+        <Form.Check
+          ref={highPurityTarget}
+          type="switch"
+          label="High Purity"
+          onClick={() => setHighPurity(!highPurity)}
+        />
+        <Overlay target={highPurityTarget.current} show={highPurity} placement="bottom-start">
           {({ placement, arrowProps, show: _show, popper, ...props }) => (
             <div
               {...props}
               style={{
                 position: "absolute",
-                backgroundColor: "rgba(255, 100, 100, 0.85)",
-                padding: "2px 10px",
+                backgroundColor: "red",
+                padding: "1px 8px",
+                marginTop: 4,
                 color: "white",
                 borderRadius: 3,
                 ...props.style,
@@ -75,7 +82,7 @@ export function OrderForm(props: {
         </Overlay>
       </Form.Group>
 
-      <Form.Group className="mb-3">
+      <Form.Group className="mb-4 mt-4">
         <Form.Label>Order Notes</Form.Label>
 
         <Form.Control as="textarea" placeholder="Leave a comment here" />
