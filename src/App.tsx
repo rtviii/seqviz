@@ -1,8 +1,8 @@
 import { range } from "lodash";
 import { useState } from "react";
+
 import { SearchResult } from "./utils/search";
 import { SeqViz } from "./viewer";
-
 
 /**
  * This module is only used for developing seqviz
